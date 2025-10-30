@@ -1,36 +1,33 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-cred')
+        IMAGE_NAME = "sriram040/internal2"
+    }
+
     stages {
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/Sriram2004yadav/internal2.git'
+                git branch: 'main', url: 'https://github.com/Sriram2004yadav/internal2.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat """
-                    docker build -t sriram040/internal2:latest .
-                """
+                bat 'docker build -t %IMAGE_NAME%:latest .'
             }
         }
 
         stage('Login to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat """
-                        docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-                    """
-                }
+                bat "docker login -u %DOCKERHUB_CREDENTIALS_USR% -p %DOCKERHUB_CREDENTIALS_PSW%"
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                bat """
-                    docker push sriram040/internal2:latest
-                """
+                bat 'docker push %IMAGE_NAME%:latest'
             }
         }
     }
